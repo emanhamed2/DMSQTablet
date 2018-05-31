@@ -3,57 +3,143 @@ import React from 'react';
 import Logo from './logo.png';
 import { LinearGradient } from 'expo'
 
+import createReactClass from 'create-react-class';
 import { Container, Header, Content, Form, Item, Input, Label, Button } from 'native-base';
 
-export default class Login extends React.Component {
+// export default class Login extends React.Component {
+
+//     render() {
+//         return (
+const Login = createReactClass({
+
+
+    getInitialState() {
+        return {
+            student: { name: "Eman Hamed", password: "Password1!", loginId: 'lemk' },
+            instructor: { name: "Instructor", password: "Password1!", loginId: 'lemy' },
+            credentials: '',
+            messageToUser: '',
+            showcredentials: false
+        };
+    },
+
+    observe(props, state) {
+        return {
+        };
+    },
+
+    async handleLogin() {
+        let field = this.state.credentials;
+        const specialCharacter = "."
+        let splitIndex = -1
+        for (let i = 0; i < field.length; i++) {
+            let c = field.charAt(i)
+            if (c === specialCharacter) {
+                splitIndex = i
+                break
+            }
+        }
+        let username = field.substring(0, splitIndex).trim()
+        let password = field.substring(splitIndex + 1).trim()
+        console.log(username)
+        
+        if (username === "" || password === "") {
+            this.setState({ messageToUser: "Invalid Input" })
+        }
+        else {
+            let result = null;
+            // let query = r.table('users').get(username)
+            // ReactRethinkdb.DefaultSession.runQuery(query).then(
+            // (res) => {
+            // console.log(res)
+        }
+        let user = null
+        if (username === this.state.student.loginId) {
+            user = this.state.student
+        } else if (username === this.state.instructor.loginId) {
+            user = this.state.instructor
+        } else {
+            this.setState({ messageToUser: "Activate your account to login" })
+        }
+        
+        if (user.password != "") {
+            console.log("USER", user)
+            if (user) {
+                bcrypt.compare(password, user.password, (err, check) => {
+                    if (check) {
+                        result = { user, token: sign(user, secret) }
+                        console.log('Success')
+                        sessionStorage.setItem("token", result.token)
+                        sessionStorage.setItem("user_id", result.user.id)
+                        sessionStorage.setItem("user_name", result.user.name)
+                        sessionStorage.setItem("role", result.user.role)
+                        console.log(sessionStorage.getItem("token"))
+                        console.log(sessionStorage.getItem("user_id"))
+                        console.log(sessionStorage.getItem("role"))
+                        //handleUserStatus(result.user.id)
+                        this.setState({ messageToUser: "" })
+                        if (sessionStorage.getItem("role") === "Instructor") {
+                            this.props.history.push("instructors")
+                        }
+                    }
+                    else {
+                        this.setState({ messageToUser: "Invalid Input" })
+                    }
+                })
+            }
+            else {
+                this.setState({ messageToUser: "Invalid Input" })
+            }
+        }
+        else {
+            this.setState({ messageToUser: "Activate your account to login" })
+        }
+
+    
+},
 
     render() {
-
-        return (
-
+        return(
             <LinearGradient
-                colors={['#e9e9e9', '#76323f']}
-                start={[0, 1]}
-                end={[1, 0]}>
+                colors = { ['#e9e9e9', '#76323f']}
+                start = { [0, 1]}
+                end = { [1, 0]} >
                 <View style={styles.container} >
                     <KeyboardAvoidingView style={styles.container} behavior="padding" enabled>
                         <View style={styles.box} >
                             <Image source={require('./logo.png')} style={styles.pic} />
-
                             <View>
                                 <Text style={styles.textStyle}>Username.Password</Text>
                                 <TextInput placeholder="Username.Password"
+                                    value={this.state.credentials}
                                     style={{ height: 40, width: 300, backgroundColor: 'white', borderColor: 'black', borderWidth: 1, paddingLeft: 10, marginLeft: 18 }}
                                     underlineColorAndroid='transparent'
-
+                                    onChange={e => this.setState({ credentials: e.target.value, messageToUser: '' })}
                                 />
-                                <Text style={{ color: 'red', paddingLeft: 22 }}>Invalid Username.Password</Text>
+                                {/* <Text style={{ color: 'red', paddingLeft: 22 }}>Invalid Username.Password</Text> */}
                             </View>
-
-                            <TouchableOpacity style={styles.button}>
-
+                            <Text style={{ color: 'red', fontSize: 20, }}> {this.state.messageToUser}</Text>
+                            <TouchableOpacity style={styles.button} onPress={() => this.handleLogin()}>
                                 <Text style={styles.buttonsText}>Login</Text>
-
-
                             </TouchableOpacity>
-
-                            <Text
-                                style={styles.textStyle1}
-                                onPress={() => { Linking.openURL('http://www.example.com/') }}
-                            >
-
-                                Forgot your password
-                    </Text>
-
+                            <TouchableOpacity >
+                                <Text
+                                    style={styles.textStyle1}
+                                    onPress={() => this.props.navigation.navigate('ForgotPassword')}
+                                >
+                                    Forgot your password
+                            </Text>
+                            </TouchableOpacity>
                         </View>
                     </KeyboardAvoidingView>
                 </View>
-            </LinearGradient>
+            </LinearGradient >
 
-        );
-    }
-}
+        )
+    },
+});
 
+export default Login;
 
 const styles = StyleSheet.create({
     container: {
